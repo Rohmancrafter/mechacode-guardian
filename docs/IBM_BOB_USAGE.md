@@ -1,7 +1,7 @@
 # IBM Bob Usage Log — MechaCode Guardian
 
 **Version:** 0.2
-**Date:** 2025-07-20 (updated same day with second session)
+**Date:** 2026-07-20 (updated same day with second session)
 **Purpose:** Auditable record of how IBM Bob (AI coding assistant) was used throughout the MechaCode Guardian project. Required for AI Builders Challenge transparency and reproducibility.
 
 ---
@@ -94,7 +94,7 @@ Use this template for each IBM Bob session entry:
 ## 4. Usage Log — Architecture and Planning
 
 ### Session A-001
-**Date:** 2025-07-20
+**Date:** 2026-07-20
 **Category:** A — Architecture & Planning
 **Task:** Generate complete project planning documentation for competition submission
 **Prompt summary:** Requested generation of PRD, ARCHITECTURE, EVALUATION_PLAN, DELIVERY_PLAN, and IBM_BOB_USAGE documents for MechaCode Guardian, an Indonesian-first AI maintenance co-worker for mechatronics troubleshooting. Specified technology stack, constraints, target workflow, and competition context.
@@ -113,7 +113,7 @@ Use this template for each IBM Bob session entry:
 ---
 
 ### Session A-002
-**Date:** 2025-07-20
+**Date:** 2026-07-20
 **Category:** A — Architecture & Planning
 **Task:** Resolve four open decisions (UD-01, UD-02, UD-03, UD-05), create COMPETITION_REQUIREMENTS.md, and propagate all decisions consistently across all five planning documents.
 **Prompt summary:** Developer provided four developer-approved decisions: fallback LLM = Gemini; retrieval thresholds (< 0.55 refuse, 0.55–0.67 escalate, ≥ 0.68 proceed); embedding model = `gemini-embedding-001` (3072-dim, same config for ingestion and query, Astra DB collection `mechacode_guardian_kb`, capstone collection not modified); knowledge base = original synthetic docs under `knowledge/synthetic/` with provenance labelling, no manufacturer manuals. Also provided competition requirements to document (July Wildcard Challenge, one submission, IBM Bob as primary partner, Gemini and Astra DB permitted, GitHub + prototype + README + video required, English video/submission, five judging criteria, July 31 deadlines, SkillsBuild certificate required, 40 Bobcoins non-extendable, checklist and disqualification-risk checklist required).
@@ -203,10 +203,70 @@ Use this template for each IBM Bob session entry:
 ### Session D-001
 *(Covered under A-001 — the five planning documents also constitute initial project documentation.)*
 
+---
+
+### Session D-002
+**Date:** 2026-07-20
+**Category:** D — Documentation
+**Task:** Create the synthetic knowledge corpus for the MechaCode Guardian RAG pipeline under `knowledge/synthetic/`.
+**Prompt summary:** Developer requested eight files constituting a complete synthetic knowledge corpus: README.md (corpus purpose, scope, provenance, licensing, safety limitations, prohibited uses), LICENSE.md (CC BY-NC 4.0, Muhammad Nur Rohman, no-warranty/no-industrial-use notice), manifest.json (machine-readable document registry for RAG ingestion), and five technical documents: MGC-SAFETY-001 (general isolation/LOTO/hazard/escalation rules), MGC-MOTOR-001 (24 V DC training motor — 5 fault scenarios), MGC-SENSOR-001 (inductive proximity sensor — 7 fault scenarios), MGC-PLC-001 (training PLC/I/O — 5 fault scenarios), MGC-PNEUMATIC-001 (low-pressure pneumatic — 5 fault scenarios). Requirements included: stable citation IDs, Indonesian symptom aliases, bilingual glossaries, symptom tables, possible-cause tables, safe inspection checklists, fictional specifications, stop conditions, prohibited actions, escalation conditions, and 700–1000 words per technical document.
+**Output summary:** IBM Bob produced all eight files:
+- `knowledge/synthetic/README.md` — corpus overview, provenance, licensing, safety limitations, intended use, prohibited use, file index, evaluation coverage design
+- `knowledge/synthetic/LICENSE.md` — CC BY-NC 4.0 full terms, no-warranty notice, no-industrial-use safety warning, author identification
+- `knowledge/synthetic/manifest.json` — machine-readable registry of all five documents with document_id, title, version, language, license, provenance, equipment_type, fictional_equipment_name, approved_for_rag, safety_classification, and notes per document
+- `knowledge/synthetic/MGC-SAFETY-001.md` — 9 sections covering definitions, 5 fundamental safety rules, 4 hazard categories (electrical, mechanical, pneumatic, chemical), LOTO sequence, pre-inspection prerequisites, 8 prohibited actions, 8 escalation triggers, bilingual glossary
+- `knowledge/synthetic/MGC-MOTOR-001.md` — 5 fault scenarios (failure to start, overheating, abnormal vibration, intermittent operation, overload) with possible-cause tables, safe inspection steps, stop conditions; fictional MTR-24 specifications; bilingual glossary
+- `knowledge/synthetic/MGC-SENSOR-001.md` — 7 fault scenarios (no signal, unstable signal, incorrect detection, alignment, contamination, wiring faults, escalation) for fictional SNS-10 inductive sensor; bilingual glossary
+- `knowledge/synthetic/MGC-PLC-001.md` — 5 fault scenarios (missing input, inactive output, communication fault, unexpected machine state, safe diagnostic isolation) for fictional PLC-200; bilingual glossary
+- `knowledge/synthetic/MGC-PNEUMATIC-001.md` — 5 fault scenarios (weak movement, failure to move, leakage, inconsistent motion, unsafe pressure) plus explicit depressurisation procedure for fictional PNU-05; bilingual glossary
+**Acceptance:** PAR
+**Verification:** UNVER — corpus content has not yet been manually reviewed by the developer. All specifications, fault codes, and procedures must be checked for internal consistency, safety accuracy, and evaluation usability before ingestion.
+**Developer notes:**
+- All content is original and synthetic. No manufacturer manual was reproduced or paraphrased.
+- All fictional specifications are labelled with "⚠ fictional training value" notices.
+- Every technical document carries a prominent synthetic-document disclaimer in its header.
+- Safety-critical scenarios (MGC-SAFETY-001 §4.1, MGC-PNEUMATIC-001 §3.5, MGC-PLC-001 §3.4) are marked as escalation-required. The RAG system must not override these escalations.
+- The pneumatic over-pressure scenario (MGC-PNEUMATIC-001 §3.5) is the highest-risk scenario in the corpus and must be verified as matching entries in `data/safety_triggers.json`.
+- Indonesian aliases are present in symptom tables and bilingual glossaries but have not been tested against `gemini-embedding-001` retrieval. Bilingual retrieval quality must be validated on Day 3 per DELIVERY_PLAN.md.
+- The corpus was designed to cover all five evaluation categories (A, B, C, D, E) defined in EVALUATION_PLAN.md §2.1. This must be confirmed when the evaluation dataset is constructed on Day 9.
+- Acceptance is PAR because the developer must review and approve the corpus content before it is ingested. Any section that is factually incorrect or misleading from a safety perspective must be corrected before ingestion.
+**Commit reference:** *(to be filled)*
+**Files affected:** `knowledge/synthetic/README.md`, `knowledge/synthetic/LICENSE.md`, `knowledge/synthetic/manifest.json`, `knowledge/synthetic/MGC-SAFETY-001.md`, `knowledge/synthetic/MGC-MOTOR-001.md`, `knowledge/synthetic/MGC-SENSOR-001.md`, `knowledge/synthetic/MGC-PLC-001.md`, `knowledge/synthetic/MGC-PNEUMATIC-001.md`
+
+---
+
+### Session D-003
+**Date:** 2026-07-20
+**Category:** D — Documentation
+**Task:** Pre-commit audit of the synthetic knowledge corpus under `knowledge/synthetic/`.
+**Prompt summary:** Developer requested a strict audit of all corpus files covering: date accuracy (competition year 2026), citation consistency (document IDs vs equipment names), manifest validation (approved_for_rag, path existence, document count), SR-01 through SR-08 coverage mapping, safety content review, internal consistency check, Indonesian language quality, and provenance/licensing accuracy.
+**Output summary:** IBM Bob performed a full inspection of all nine target files and produced the following corrections:
+- Corrected all document `Date` headers from the incorrect prior-year date to `2026-07-20` in all eight corpus files and in `docs/PRD.md` and `docs/IBM_BOB_USAGE.md`.
+- Set `approved_for_rag: false` on all five documents in `manifest.json` (was incorrectly `true`).
+- Corrected `manifest.json` `created` field to `2026-07-20`.
+- Updated `README.md` §3 (Provenance Statement) to honestly state that the corpus was created under Muhammad Nur Rohman's direction with IBM Bob assistance; removed the false claim that every sentence was personally authored by the developer without assistance.
+- Updated `LICENSE.md` copyright year to 2026 and added provenance attribution footnote.
+- Added SR-03 coverage paragraph to `MGC-SAFETY-001 §8` (escalation notice must be topmost priority element — previously unaddressed in corpus).
+- Harmonised LOTO Indonesian term in `MGC-SAFETY-001 §2` to `Kunci/Tanda Pengaman (LOTO)` (consistent with §9 glossary).
+- Corrected `MGC-SENSOR-001 §3.2 step 3` voltage threshold (was `< 20 V / > 28 V`; corrected to reflect the nominal expected range of 22–26 V DC with clear escalation language, consistent with §3.1 and §2 specifications).
+- Corrected `docs/PRD.md §7` MVP date from the incorrect prior-year date to `2026-07-31`.
+- Corrected all resolved decision dates in `docs/PRD.md §11.2` from the incorrect prior-year date to `2026-07-20`.
+**Acceptance:** PAR
+**Verification:** UNVER — corrections address structural and factual issues but developer must independently verify: (a) SR coverage mapping is complete; (b) all fictional values are self-consistent; (c) Indonesian aliases are idiomatic for the target technician audience.
+**Developer notes:**
+- Corpus status remains PAR / UNVER. No content has been marked approved or verified.
+- No application code was modified. No commit or push was performed.
+- All five documents remain at `approved_for_rag: false`. Developer must set this to `true` only after completing manual review of each document.
+- Remaining open assumptions: fictional voltage/current/resistance thresholds are internally consistent but empirically unvalidated; Indonesian alias retrieval quality against `gemini-embedding-001` has not been tested; SR-04, SR-07, SR-08 enforcement depends on system implementation, not corpus content.
+**Commit reference:** *(to be filled)*
+**Files affected:** `knowledge/synthetic/README.md`, `knowledge/synthetic/LICENSE.md`, `knowledge/synthetic/manifest.json`, `knowledge/synthetic/MGC-SAFETY-001.md`, `knowledge/synthetic/MGC-MOTOR-001.md`, `knowledge/synthetic/MGC-SENSOR-001.md`, `knowledge/synthetic/MGC-PLC-001.md`, `knowledge/synthetic/MGC-PNEUMATIC-001.md`, `docs/PRD.md`, `docs/IBM_BOB_USAGE.md`
+
+---
+
 | Expected Session IDs | Day | Planned Task |
 |---|---|---|
-| D-002 | Day 10 | README.md — setup instructions, architecture summary, screenshots |
-| D-003 | Day 10 | Inline docstrings for all public functions |
+| D-004 | Day 10 | README.md — setup instructions, architecture summary, screenshots |
+| D-005 | Day 10 | Inline docstrings for all public functions |
 
 ---
 
@@ -233,9 +293,9 @@ Use this template for each IBM Bob session entry:
 | T — Testing | 0 | — | — | — | — | — | — |
 | R — Refactoring | 0 | — | — | — | — | — | — |
 | S — Security | 0 | — | — | — | — | — | — |
-| D — Documentation | 0 | — | — | — | — | — | — |
+| D — Documentation | 2 | 0 | 0 | 0 | 2 | 0 | 2 |
 | P — Deployment | 0 | — | — | — | — | — | — |
-| **Total** | **2** | **0** | **2** | **0** | **0** | **2** | **0** |
+| **Total** | **4** | **0** | **2** | **0** | **2** | **2** | **2** |
 
 ---
 
@@ -258,4 +318,4 @@ The following principles govern this log:
 ---
 
 *End of IBM_BOB_USAGE.md*
-*Last updated: 2025-07-20 (Session A-002) by solo developer.*
+*Last updated: 2026-07-20 (Session D-003 — corpus pre-commit audit) by Muhammad Nur Rohman.*

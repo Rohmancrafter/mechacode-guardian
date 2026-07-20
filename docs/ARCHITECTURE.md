@@ -1,7 +1,7 @@
 # Architecture Document — MechaCode Guardian
 
 **Version:** 0.2
-**Date:** 2025-07-20 (updated same day with resolved decisions)
+**Date:** 2026-07-20 (updated same day with resolved decisions)
 **Status:** Design intent — no production code exists yet. Diagrams represent the intended target state for the MVP.
 
 ---
@@ -62,7 +62,7 @@
 
 ### 1.5 LLM Provider Abstraction — `backend/generation/providers/`
 - **Primary:** IBM Granite Instruct via `ibm-watsonx-ai` Python SDK, hosted on watsonx.ai.
-- **Fallback:** Gemini (developer's existing Google AI access) via `google-generativeai` Python SDK.
+- **Fallback:** Gemini (developer's existing Google AI access) via `google-genai` Python SDK (`from google import genai`).
 - **Interface contract:**
 ```python
 class LLMProvider(Protocol):
@@ -415,7 +415,7 @@ Were zero chunks retrieved above minimum score threshold?
 | Primary LLM | IBM Granite (watsonx.ai) | Competition requirement; IBM Bob is the primary AI development partner | GPT-4o, Claude Sonnet |
 | Fallback LLM | Gemini (Google AI) | Developer has existing access; competition-permitted; same API covers embeddings | Groq/llama-3 (rejected — adds new account/API), Ollama (rejected — GPU requirement) |
 | Embedding model | `gemini-embedding-001` (3072-dim) | Multilingual (handles Indonesian + English natively); competition-permitted; consistent API with Gemini fallback LLM | ibm/slate (English-only), paraphrase-multilingual-MiniLM (lower dim, local dependency) |
-| LLM calling | `ibm-watsonx-ai` SDK (primary), `google-generativeai` SDK (fallback) | Official SDKs for respective services | LangChain (heavier dependency, abstraction cost) |
+| LLM calling | `ibm-watsonx-ai` SDK (primary), `google-genai` SDK (fallback) | Official SDKs for respective services | LangChain (heavier dependency, abstraction cost) |
 | Knowledge base content | Original synthetic documentation (`knowledge/synthetic/`) | Copyright risk of manufacturer manuals eliminated; full control over content quality | Manufacturer PDFs (rejected — redistribution rights not verified) |
 | Language detection | langdetect | Lightweight, no API call required | LLM-based detection (expensive) |
 | Session ID | UUID4, anonymous | Privacy-preserving, no PII | — |
@@ -525,11 +525,11 @@ This section records the intended growth path beyond the MVP. None of these are 
 
 | ID | Decision | Resolved Value | Date |
 |---|---|---|---|
-| UD-01 | Fallback LLM provider | **Gemini** via `google-generativeai` SDK. Groq rejected (new account required); Ollama rejected (GPU dependency). | 2025-07-20 |
-| UD-02 | Retrieval similarity thresholds | **< 0.55 = SR-06 refusal; 0.55–0.67 = escalate/clarify; ≥ 0.68 = proceed.** These are provisional — must be calibrated against the 30-case evaluation dataset. | 2025-07-20 |
-| UD-03 | Embedding model | **`gemini-embedding-001`, 3072-dim, cosine, `RETRIEVAL_DOCUMENT`/`RETRIEVAL_QUERY` task types.** Consistent config mandatory for ingestion and query. | 2025-07-20 |
-| UD-04 | Frontend state management | React Context for MVP (low shared-state complexity); Zustand if state grows post-MVP. | 2025-07-20 |
-| UD-05 | Knowledge base content | **Original synthetic documentation** under `knowledge/synthetic/`. Manufacturer manuals blocked until redistribution rights verified. Capstone collection not modified. | 2025-07-20 |
+| UD-01 | Fallback LLM provider | **Gemini** via `google-genai` SDK (`from google import genai`). Groq rejected (new account required); Ollama rejected (GPU dependency). | 2026-07-20 |
+| UD-02 | Retrieval similarity thresholds | **< 0.55 = SR-06 refusal; 0.55–0.67 = escalate/clarify; ≥ 0.68 = proceed.** These are provisional — must be calibrated against the 30-case evaluation dataset. | 2026-07-20 |
+| UD-03 | Embedding model | **`gemini-embedding-001`, 3072-dim, cosine, `RETRIEVAL_DOCUMENT`/`RETRIEVAL_QUERY` task types.** Consistent config mandatory for ingestion and query. | 2026-07-20 |
+| UD-04 | Frontend state management | React Context for MVP (low shared-state complexity); Zustand if state grows post-MVP. | 2026-07-20 |
+| UD-05 | Knowledge base content | **Original synthetic documentation** under `knowledge/synthetic/`. Manufacturer manuals blocked until redistribution rights verified. Capstone collection not modified. | 2026-07-20 |
 
 ### 12.2 Open Decisions
 

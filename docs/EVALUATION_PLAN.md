@@ -1,7 +1,7 @@
 # Evaluation Plan — MechaCode Guardian
 
 **Version:** 0.2
-**Date:** 2025-07-20 (updated same day with resolved decisions)
+**Date:** 2026-07-20 (updated same day with resolved decisions)
 **Status:** Plan only — no evaluation has been run yet. Data collection and scoring are scheduled per DELIVERY_PLAN.md.
 
 ---

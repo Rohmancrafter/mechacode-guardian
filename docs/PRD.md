@@ -1,7 +1,7 @@
 # Product Requirements Document — MechaCode Guardian
 
 **Version:** 0.2
-**Date:** 2025-07-20 (updated same day with resolved decisions)
+**Date:** 2026-07-20 (updated same day with resolved decisions)
 **Author:** Solo Developer
 **Competition:** AI Builders Challenge with IBM Bob — Wildcard Challenge (Intelligent Systems for the Future of Work)
 **Official deadline:** July 31, 2026 at 11:59 PM ET (= August 1, 2026 at 10:59 AM WIB)
@@ -192,7 +192,7 @@ MechaCode Guardian addresses these pain points by acting as an AI-powered mainte
 
 ## 7. MVP Scope
 
-The MVP must be demonstrable by **2025-07-31**. It is defined as the minimum feature set that proves the core value proposition:
+The MVP must be demonstrable by **2026-07-31**. It is defined as the minimum feature set that proves the core value proposition:
 
 > *"MechaCode Guardian can take a symptom description, retrieve grounded evidence from synthetic technical documentation, produce a ranked diagnosis with citations, enforce a safety gate, and generate a checklist — all in Indonesian or English."*
 
@@ -281,11 +281,11 @@ Safety is a first-class requirement given the industrial context. The following 
 
 | ID | Decision | Resolved Value | Date |
 |---|---|---|---|
-| UD-01 | Fallback LLM provider | **Gemini** (developer's existing Google AI access). Groq and Ollama rejected. | 2025-07-20 |
-| UD-02 | Retrieval similarity thresholds | **< 0.55 = refuse (SR-06); 0.55–0.67 = escalate/clarify; ≥ 0.68 = proceed.** Provisional — must be calibrated against evaluation dataset. | 2025-07-20 |
-| UD-03 | Embedding model | **`gemini-embedding-001`, 3072-dimensional output.** Same model, dimensionality, normalisation, and task type (`RETRIEVAL_DOCUMENT` for ingestion, `RETRIEVAL_QUERY` for queries) throughout. | 2025-07-20 |
-| UD-04 | Frontend API routing | Direct REST calls from frontend to backend (no BFF proxy for MVP). | 2025-07-20 |
-| UD-05 | Knowledge base content | **Original synthetic documentation** created specifically for MechaCode Guardian, stored under `knowledge/synthetic/`. Manufacturer manuals not ingested until redistribution rights verified in writing. | 2025-07-20 |
+| UD-01 | Fallback LLM provider | **Gemini** (developer's existing Google AI access). Groq and Ollama rejected. | 2026-07-20 |
+| UD-02 | Retrieval similarity thresholds | **< 0.55 = refuse (SR-06); 0.55–0.67 = escalate/clarify; ≥ 0.68 = proceed.** Provisional — must be calibrated against evaluation dataset. | 2026-07-20 |
+| UD-03 | Embedding model | **`gemini-embedding-001`, 3072-dimensional output.** Same model, dimensionality, normalisation, and task type (`RETRIEVAL_DOCUMENT` for ingestion, `RETRIEVAL_QUERY` for queries) throughout. | 2026-07-20 |
+| UD-04 | Frontend API routing | Direct REST calls from frontend to backend (no BFF proxy for MVP). | 2026-07-20 |
+| UD-05 | Knowledge base content | **Original synthetic documentation** created specifically for MechaCode Guardian, stored under `knowledge/synthetic/`. Manufacturer manuals not ingested until redistribution rights verified in writing. | 2026-07-20 |
 
 ### 11.3 Remaining Open Decisions
 

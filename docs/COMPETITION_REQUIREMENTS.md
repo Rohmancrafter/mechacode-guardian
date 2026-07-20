@@ -1,7 +1,7 @@
 # Competition Requirements — AI Builders Challenge with IBM Bob
 
 **Version:** 0.1
-**Date:** 2025-07-20
+**Date:** 2026-07-20
 **Source:** Official AI Builders Challenge rules — July Wildcard Challenge
 **Purpose:** Single authoritative reference for all competition constraints, requirements, and submission rules. Cross-referenced by all other planning documents.
 

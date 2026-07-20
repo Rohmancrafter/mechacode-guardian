@@ -1,7 +1,7 @@
 # Delivery Plan — MechaCode Guardian
 
 **Version:** 0.2
-**Date:** 2025-07-20 (updated same day with resolved decisions)
+**Date:** 2026-07-20 (updated same day with resolved decisions)
 **Official Deadline:** July 31, 2026 at 11:59 PM ET (= August 1, 2026 at 10:59 AM WIB)
 **Internal Deadline:** July 31, 2026 at 18:00 WIB (~17 hours before the official ET cutoff)
 **Developer:** Solo developer, Windows 11, Intel i7 10th Gen, GTX 1650, 16 GB RAM
@@ -61,7 +61,7 @@
 - [ ] Create watsonx.ai project, generate API key, note IBM Granite model ID
 - [ ] Generate Google AI API key; confirm `gemini-embedding-001` access (output_dimensionality=3072)
 - [ ] Create Astra DB database and collections: `mechacode_guardian_kb` (vector, 3072-dim, cosine) and `diagnosis_reports`; confirm capstone collection is **not** modified
-- [ ] Scaffold backend: `backend/` directory, virtual environment (Python 3.11), install core dependencies: `fastapi`, `uvicorn`, `pydantic`, `astrapy`, `ibm-watsonx-ai`, `google-generativeai`, `langdetect`, `python-dotenv`
+- [ ] Scaffold backend: `backend/` directory, virtual environment (Python 3.11), install core dependencies: `fastapi`, `uvicorn`, `pydantic`, `astrapy`, `ibm-watsonx-ai`, `google-genai`, `langdetect`, `python-dotenv`
 - [ ] Create `.env.example` with all required variable names: `ASTRA_DB_TOKEN`, `WX_API_KEY`, `WX_PROJECT_ID`, `GOOGLE_AI_API_KEY` (no real values)
 - [ ] Scaffold frontend: `npm create vite@latest frontend -- --template react-ts`, install `react-i18next`
 - [ ] Verify both servers start: `uvicorn backend.main:app --reload` and `npm run dev`
@@ -135,7 +135,7 @@
 
 - [ ] Implement `backend/generation/providers/base.py`: `LLMProvider` Protocol
 - [ ] Implement `backend/generation/providers/granite.py`: watsonx.ai IBM Granite provider
-- [ ] Implement `backend/generation/providers/gemini.py`: Gemini fallback provider via `google-generativeai` SDK
+- [ ] Implement `backend/generation/providers/gemini.py`: Gemini fallback provider via `google-genai` SDK (`from google import genai`)
 - [ ] Implement `backend/generation/router.py`: `ProviderRouter` — try primary (Granite), on error retry Gemini fallback, emit `FALLBACK_USED` log
 - [ ] Implement `backend/generation/prompts/diagnosis_id.txt` (Indonesian)
 - [ ] Implement `backend/generation/prompts/diagnosis_en.txt` (English)
@@ -322,7 +322,7 @@ The **MVP as a whole** is done when:
 - **Fallback:** If structured output is unreliable, use regex + heuristic extraction from free-text output.
 
 ### R-06 — Gemini fallback provider configuration issue
-- **Mitigation:** Implement and smoke-test the Gemini provider on Day 5. The `google-generativeai` SDK is well-documented; configuration issues are expected to be minor.
+- **Mitigation:** Implement and smoke-test the Gemini provider on Day 5. The `google-genai` SDK is well-documented; configuration issues are expected to be minor.
 - **Fallback:** If Gemini is genuinely unavailable on Day 5, add a mock fallback provider that returns a fixed "service degraded" response; remove fallback from competition demo scope and note it as a planned feature.
 
 ### R-07 — Synthetic documentation too sparse
@@ -347,11 +347,11 @@ This log records decisions made during delivery, with dates and rationale.
 
 | Date | Decision | Rationale | Alternatives Rejected |
 |---|---|---|---|
-| 2025-07-20 | Use Markdown for reports (not PDF) | Time risk; PDF rendering library adds a day of work | pdfkit, WeasyPrint |
-| 2025-07-20 | No LangChain or LlamaIndex | Reduces dependency surface, improves debugability, keeps token usage explicit | LangChain RAG chain |
-| 2025-07-20 | Astra DB as vector store, collection `mechacode_guardian_kb` | No self-hosted infra, free tier, native vector search; competition-permitted | Qdrant (self-hosted), pgvector |
-| 2025-07-20 | Modular monolith (not microservices) | Solo developer, 12-day window; microservices add deployment overhead | Separate FastAPI services |
-| 2025-07-20 | **UD-01 resolved:** Fallback LLM = Gemini | Developer has existing Google AI access; competition-permitted; same API covers embeddings | Groq (new account required), Ollama (GPU dependency) |
-| 2025-07-20 | **UD-02 resolved:** Retrieval thresholds: <0.55 refuse, 0.55–0.67 escalate, ≥0.68 proceed (provisional) | Reasonable starting point; calibration required on Day 9 | Any single-threshold approach (less nuanced) |
-| 2025-07-20 | **UD-03 resolved:** Embedding model = `gemini-embedding-001`, 3072-dim | Multilingual; competition-permitted; consistent with Gemini fallback LLM API | ibm/slate (English-only), paraphrase-multilingual-MiniLM (lower dim, local) |
-| 2025-07-20 | **UD-05 resolved:** Knowledge base = original synthetic documentation under `knowledge/synthetic/` | Eliminates copyright risk; full content control; evaluation integrity | Manufacturer PDFs (redistribution rights unverified) |
+| 2026-07-20 | Use Markdown for reports (not PDF) | Time risk; PDF rendering library adds a day of work | pdfkit, WeasyPrint |
+| 2026-07-20 | No LangChain or LlamaIndex | Reduces dependency surface, improves debugability, keeps token usage explicit | LangChain RAG chain |
+| 2026-07-20 | Astra DB as vector store, collection `mechacode_guardian_kb` | No self-hosted infra, free tier, native vector search; competition-permitted | Qdrant (self-hosted), pgvector |
+| 2026-07-20 | Modular monolith (not microservices) | Solo developer, 12-day window; microservices add deployment overhead | Separate FastAPI services |
+| 2026-07-20 | **UD-01 resolved:** Fallback LLM = Gemini | Developer has existing Google AI access; competition-permitted; same API covers embeddings | Groq (new account required), Ollama (GPU dependency) |
+| 2026-07-20 | **UD-02 resolved:** Retrieval thresholds: <0.55 refuse, 0.55–0.67 escalate, ≥0.68 proceed (provisional) | Reasonable starting point; calibration required on Day 9 | Any single-threshold approach (less nuanced) |
+| 2026-07-20 | **UD-03 resolved:** Embedding model = `gemini-embedding-001`, 3072-dim | Multilingual; competition-permitted; consistent with Gemini fallback LLM API | ibm/slate (English-only), paraphrase-multilingual-MiniLM (lower dim, local) |
+| 2026-07-20 | **UD-05 resolved:** Knowledge base = original synthetic documentation under `knowledge/synthetic/` | Eliminates copyright risk; full content control; evaluation integrity | Manufacturer PDFs (redistribution rights unverified) |
