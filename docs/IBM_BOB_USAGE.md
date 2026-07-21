@@ -143,13 +143,64 @@ Use this template for each IBM Bob session entry:
 
 ## 5. Usage Log — Coding
 
-> **Status:** No coding sessions have occurred yet. Entries will be added from Day 1 (July 21) onwards.
+### Session C-001
+**Date:** 2026-07-21
+**Category:** C — Coding
+**Task:** Scaffold the initial application foundation: backend (FastAPI modular monolith) and frontend (React + Vite + TypeScript).
+**Prompt summary:** Developer requested a complete Day 1 scaffold covering: (1) FastAPI backend with all module packages (`core/`, `api/`, `ingestion/`, `retrieval/`, `generation/`, `safety/`, `reporting/`), config loading with environment variable validation, structured JSON logging, Pydantic v2 domain models, health/diagnose/report routers (stubs), LLMProvider Protocol, EmbeddingConfig singleton matching UD-03; (2) React + Vite + TypeScript frontend with react-i18next (id/en), typed API client, SymptomForm, DiagnosisResult, EscalationNotice, Checklist, ReportDownload components, DiagnosisPage, dev proxy to backend; (3) `.env.example` with all required variable names, no real values; (4) `.gitignore` updates for `.env`, `.venv/`, `node_modules/`, `dist/`; (5) `data/safety_triggers.json` with 21 patterns (≥ 20 required by FR-05.1); (6) `scripts/ingest.py` CLI stub; (7) `pyproject.toml` pytest config; (8) Unit tests for config, EmbeddingConfig, and FastAPI smoke tests; (9) README with all 5 competition topics; (10) IBM_BOB_USAGE.md session entry. Restrictions: no Astra DB writes, no LLM calls, no RAG pipeline, no real credentials.
+**Output summary:** IBM Bob produced:
+- `backend/main.py` — FastAPI app factory with CORS and router registration
+- `backend/core/__init__.py`, `backend/core/config.py` — Settings with env var validation and singleton caching
+- `backend/core/logging.py` — Structured JSON logger, Timer context manager, log_request()
+- `backend/core/models.py` — Pydantic v2 domain models: Chunk, ProbableCause, ChecklistStep, EscalationTrigger, SessionData, ConfidenceBand, Language, HazardType
+- `backend/core/embedding_config.py` — EmbeddingConfig singleton locked to UD-03 values
+- `backend/api/schemas.py` — DiagnoseRequest, DiagnoseResponse, ReportResponse, HealthResponse, CitationBadge
+- `backend/api/routers/health.py` — GET /health stub
+- `backend/api/routers/diagnose.py` — POST /api/v1/diagnose stub (returns refusal_flag=true)
+- `backend/api/routers/report.py` — POST /api/v1/report/{session_id} stub
+- `backend/generation/providers/base.py` — LLMProvider Protocol, LLMResponse, ProviderError
+- `backend/requirements.txt` — all Day 1 dependencies with docling commented for Day 2
+- `pyproject.toml` — pytest configuration
+- `frontend/` — Vite scaffold (react-ts template) with react-i18next added
+- `frontend/vite.config.ts` — dev proxy for /api/* and /health to localhost:8000
+- `frontend/src/api/client.ts` — typed TypeScript fetch wrappers
+- `frontend/src/i18n/index.ts`, `locales/id.json`, `locales/en.json` — bilingual strings
+- `frontend/src/components/SymptomForm.tsx` — FR-01 input form with language toggle
+- `frontend/src/components/EscalationNotice.tsx` — non-dismissable safety alert (SR-02/03)
+- `frontend/src/components/DiagnosisResult.tsx` — causes + citations + SR-04 disclaimer
+- `frontend/src/components/Checklist.tsx` — ordered steps with safety notes (SR-05)
+- `frontend/src/components/ReportDownload.tsx` — FR-07 Markdown download
+- `frontend/src/pages/DiagnosisPage.tsx` — primary user journey page
+- `frontend/src/main.tsx` — updated to mount DiagnosisPage
+- `.env.example` — all variable names, no real values (NFR-04)
+- `.gitignore` — added `.env`, `.venv/`, `node_modules/`, `dist/`, OS artefacts
+- `data/safety_triggers.json` — 21 trigger patterns in bilingual regex (FR-05.1: minimum 20)
+- `scripts/ingest.py` — CLI stub with argument parsing
+- `README.md` — full rewrite covering all 5 competition topics (COMPETITION_REQUIREMENTS.md §5)
+- `tests/unit/test_config.py` — 5 unit tests for Settings loading
+- `tests/unit/test_embedding_config.py` — 5 unit tests for EmbeddingConfig UD-03 values
+- `tests/unit/test_app_smoke.py` — 5 async smoke tests for all 3 routers
+- `docs/IBM_BOB_USAGE.md` — this session entry (C-001)
+**Acceptance:** MOD
+**Verification:** UNVER — developer must: (1) read all generated files before committing; (2) run `pytest tests/unit/ -v` and confirm all tests pass; (3) run `npm run build` and confirm no TypeScript errors; (4) verify `.env` is not tracked by git.
+**Developer notes:**
+- All stub routers clearly state they are not operational. No placeholder pretends an external integration works.
+- `EmbeddingConfig` is a frozen dataclass singleton to prevent accidental misconfiguration (UD-03 constraint).
+- `safety_triggers.json` contains 21 patterns (exceeds minimum of 20), all in bilingual regex (Bahasa Indonesia + English).
+- The `LLMProvider` Protocol uses `@runtime_checkable` so provider instances can be verified at runtime.
+- `CORS_ORIGINS` defaults to `http://localhost:5173` (Vite dev server); must be updated before any public deployment.
+- Frontend `App.tsx` from the Vite template is superseded by `DiagnosisPage.tsx` but left in place; it is not imported.
+- `docling` is commented out in `requirements.txt` to avoid heavy transitive dependencies during scaffold; uncomment on Day 2.
+- `pyproject.toml` sets `asyncio_mode = "auto"` for `pytest-asyncio` so async tests do not require per-test `@pytest.mark.asyncio` — verified compatible with the installed `pytest-asyncio>=0.23.0`.
+**Commit reference:** *(to be filled)*
+**Files affected:** See Output summary above (39 files created or modified)
 
-### Template entries to be completed:
+---
+
+### Template entries to be completed (remaining):
 
 | Expected Session IDs | Day | Planned Task |
 |---|---|---|
-| C-001 | Day 1 | Backend scaffold: FastAPI app skeleton, Pydantic schemas |
 | C-002 | Day 2 | IBM Docling parser integration |
 | C-003 | Day 2 | Chunker implementation |
 | C-004 | Day 2 | Embedding API client |
@@ -289,13 +340,13 @@ Use this template for each IBM Bob session entry:
 | Category | Sessions | ACC | MOD | REJ | PAR | VER | UNVER |
 |---|---|---|---|---|---|---|---|
 | A — Architecture | 2 | 0 | 2 | 0 | 0 | 2 | 0 |
-| C — Coding | 0 | — | — | — | — | — | — |
+| C — Coding | 1 | 0 | 1 | 0 | 0 | 0 | 1 |
 | T — Testing | 0 | — | — | — | — | — | — |
 | R — Refactoring | 0 | — | — | — | — | — | — |
 | S — Security | 0 | — | — | — | — | — | — |
-| D — Documentation | 2 | 0 | 0 | 0 | 2 | 0 | 2 |
+| D — Documentation | 3 | 0 | 0 | 0 | 3 | 0 | 3 |
 | P — Deployment | 0 | — | — | — | — | — | — |
-| **Total** | **4** | **0** | **2** | **0** | **2** | **2** | **2** |
+| **Total** | **6** | **0** | **3** | **0** | **3** | **2** | **4** |
 
 ---
 
@@ -318,4 +369,4 @@ The following principles govern this log:
 ---
 
 *End of IBM_BOB_USAGE.md*
-*Last updated: 2026-07-20 (Session D-003 — corpus pre-commit audit) by Muhammad Nur Rohman.*
+*Last updated: 2026-07-21 (Session C-001 — application foundation scaffold) by Muhammad Nur Rohman.*

@@ -1,0 +1,44 @@
+# MechaCode Guardian — Backend Python Dependencies
+#
+# Install into a virtual environment:
+#   python -m venv .venv
+#   .venv\Scripts\activate          # Windows PowerShell
+#   pip install -r requirements.txt
+#
+# All packages are pinned to minimum compatible versions.
+# Run `pip-audit` before final submission to check for known vulnerabilities.
+
+# Web framework
+fastapi>=0.111.0
+uvicorn[standard]>=0.29.0
+
+# Data validation
+pydantic>=2.7.0
+pydantic-settings>=2.2.0
+
+# Environment variable loading
+python-dotenv>=1.0.0
+
+# Language detection (FR-03.2, used in core/language.py — Day 3)
+langdetect>=1.0.9
+
+# Vector store client (Astra DB — retrieval module, Day 3)
+astrapy>=1.5.0
+
+# IBM watsonx.ai SDK — IBM Granite primary LLM (Day 5)
+ibm-watsonx-ai>=1.0.0
+
+# Google AI SDK — gemini-embedding-001 + Gemini fallback LLM (Day 2 / Day 5)
+# Architecture §1.5: "from google import genai" — package name is google-genai
+google-genai>=0.8.0
+
+# IBM Docling — document parsing for ingestion pipeline (Day 2)
+# Installed separately to avoid heavy transitive deps during scaffold:
+#   pip install docling
+# Uncomment when ready to implement ingestion:
+# docling>=2.0.0
+
+# Testing
+pytest>=8.2.0
+pytest-asyncio>=0.23.0
+httpx>=0.27.0          # TestClient for FastAPI

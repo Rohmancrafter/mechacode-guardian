@@ -1,0 +1,37 @@
+{
+  "app.title": "MechaCode Guardian",
+  "app.tagline": "AI Maintenance Co-worker for Mechatronics Technicians",
+  "app.disclaimer": "This is an AI-assisted recommendation. Always verify with the applicable technical manual and qualified personnel.",
+
+  "nav.home": "Home",
+  "nav.language": "Language",
+
+  "symptom.form.title": "Fault Diagnosis",
+  "symptom.form.equipment_type": "Equipment Type",
+  "symptom.form.equipment_type.placeholder": "e.g. CNC Milling Machine",
+  "symptom.form.manufacturer": "Manufacturer (optional)",
+  "symptom.form.model": "Model (optional)",
+  "symptom.form.alarm_code": "Alarm Code (optional)",
+  "symptom.form.symptom_text": "Symptom Description",
+  "symptom.form.symptom_text.placeholder": "Describe the observed symptoms in detail...",
+  "symptom.form.submit": "Start Diagnosis",
+  "symptom.form.submitting": "Processing...",
+
+  "diagnosis.loading": "Analysing symptoms...",
+  "diagnosis.confidence": "Confidence Level",
+  "diagnosis.causes.title": "Probable Causes",
+  "diagnosis.cause.rank": "Likely Cause #{{rank}}",
+  "diagnosis.citation": "Source",
+  "diagnosis.checklist.title": "Inspection Steps",
+  "diagnosis.checklist.safety_note": "Safety Note",
+  "diagnosis.report.download": "Download Report",
+
+  "escalation.title": "⚠ HAZARD ALERT — ESCALATION REQUIRED",
+  "escalation.subtitle": "Do not proceed without assistance from a qualified technician.",
+
+  "refusal.title": "Documentation Not Found",
+  "refusal.message": "No relevant documentation found for this symptom. Please consult the official technical manual directly.",
+
+  "error.generic": "An error occurred. Please try again.",
+  "error.network": "Cannot reach the server. Make sure the backend is running."
+}

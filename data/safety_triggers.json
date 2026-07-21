@@ -1,0 +1,135 @@
+{
+  "_comment": "Safety trigger list for MechaCode Guardian safety gate (FR-05, SR-01, SR-07).",
+  "_instruction": "Add new patterns to the 'triggers' array. Version field must be incremented on any change. This file is version-controlled and auditable (SR-07).",
+  "version": "1.0.0",
+  "last_updated": "2026-07-21",
+  "minimum_required": 20,
+  "triggers": [
+    {
+      "pattern": "tegangan tinggi|high.?voltage|HV|high voltage",
+      "hazard_type": "electrical",
+      "severity": "critical",
+      "description": "High voltage presence"
+    },
+    {
+      "pattern": "arc flash|flash over|loncatan busur|percikan busur",
+      "hazard_type": "electrical",
+      "severity": "critical",
+      "description": "Arc flash / electrical arc"
+    },
+    {
+      "pattern": "arus tinggi|high.?current|overcurrent|arus bocor|ground fault",
+      "hazard_type": "electrical",
+      "severity": "critical",
+      "description": "High current or ground fault"
+    },
+    {
+      "pattern": "sengatan listrik|electric.?shock|kejutan listrik",
+      "hazard_type": "electrical",
+      "severity": "critical",
+      "description": "Electric shock risk"
+    },
+    {
+      "pattern": "energi tersimpan|stored energy|kapasitor|capacitor bank|energized",
+      "hazard_type": "mechanical",
+      "severity": "high",
+      "description": "Stored energy (spring, capacitor, flywheel)"
+    },
+    {
+      "pattern": "gas bocor|gas leak|kebocoran gas|nitrogen leak|gas berbahaya|toxic gas|hydrogen|chlorine|ammonia",
+      "hazard_type": "chemical",
+      "severity": "critical",
+      "description": "Hazardous gas leak"
+    },
+    {
+      "pattern": "kebakaran|fire|terbakar|burning smell|api|smoke|asap",
+      "hazard_type": "electrical",
+      "severity": "critical",
+      "description": "Fire or burning smell"
+    },
+    {
+      "pattern": "tekanan hidraulik|hydraulic.?pressure|over.?pressure|tekanan berlebih",
+      "hazard_type": "hydraulic",
+      "severity": "high",
+      "description": "Excessive hydraulic pressure"
+    },
+    {
+      "pattern": "kebocoran hidraulik|hydraulic.?leak|minyak hidraulik bocor",
+      "hazard_type": "hydraulic",
+      "severity": "high",
+      "description": "Hydraulic fluid leak"
+    },
+    {
+      "pattern": "tekanan pneumatik|pneumatic.?pressure|over.?pressure.?udara|kebocoran udara bertekanan",
+      "hazard_type": "pneumatic",
+      "severity": "high",
+      "description": "Excessive pneumatic pressure"
+    },
+    {
+      "pattern": "loto|lockout|tagout|lock out tag out|isolasi daya",
+      "hazard_type": "electrical",
+      "severity": "high",
+      "description": "LOTO procedure mentioned — confirm before proceeding"
+    },
+    {
+      "pattern": "ledakan|explosion|meledak|blast|over.?pressure.?ledak",
+      "hazard_type": "mechanical",
+      "severity": "critical",
+      "description": "Explosion risk"
+    },
+    {
+      "pattern": "suhu tinggi|high.?temperature|overheat|overtemperature|panas berlebih|terlalu panas",
+      "hazard_type": "mechanical",
+      "severity": "high",
+      "description": "High temperature / overheating risk"
+    },
+    {
+      "pattern": "kerusakan mekanis|mechanical.?damage|patah|fracture|crack|retakan|keretakan",
+      "hazard_type": "mechanical",
+      "severity": "high",
+      "description": "Structural / mechanical damage"
+    },
+    {
+      "pattern": "panel.?listrik.?terbuka|open.?electrical.?panel|enclosure.?open|panel terbuka",
+      "hazard_type": "electrical",
+      "severity": "high",
+      "description": "Open electrical panel"
+    },
+    {
+      "pattern": "motor terbakar|motor.?burn|smoke.?motor|terbakar.?motor",
+      "hazard_type": "electrical",
+      "severity": "critical",
+      "description": "Motor burning or burnt"
+    },
+    {
+      "pattern": "kebocoran bahan kimia|chemical.?leak|tumpahan kimia|chemical.?spill",
+      "hazard_type": "chemical",
+      "severity": "critical",
+      "description": "Chemical leak or spill"
+    },
+    {
+      "pattern": "keselamatan darurat|emergency.?stop|e.?stop|tombol darurat",
+      "hazard_type": "mechanical",
+      "severity": "critical",
+      "description": "Emergency stop activated"
+    },
+    {
+      "pattern": "platform jatuh|fall.?hazard|jatuh dari ketinggian|height.?hazard|scaffolding",
+      "hazard_type": "mechanical",
+      "severity": "critical",
+      "description": "Fall hazard"
+    },
+    {
+      "pattern": "pemutus daya|circuit.?breaker.?trip|tripped|breaker.?tripped|MCB trip",
+      "hazard_type": "electrical",
+      "severity": "high",
+      "description": "Circuit breaker tripped — possible electrical fault"
+    },
+    {
+      "pattern": "asap putih|white smoke|kebocoran pendingin|coolant.?leak.?electric|pendingin bocor",
+      "hazard_type": "chemical",
+      "severity": "high",
+      "description": "Coolant leak near electrical systems"
+    }
+  ]
+}

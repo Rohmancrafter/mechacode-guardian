@@ -1,0 +1,37 @@
+{
+  "app.title": "MechaCode Guardian",
+  "app.tagline": "Asisten Pemeliharaan AI untuk Teknisi Mekatronik",
+  "app.disclaimer": "Ini adalah rekomendasi berbasis AI. Selalu verifikasi dengan manual teknis resmi dan personel yang berkualifikasi.",
+
+  "nav.home": "Beranda",
+  "nav.language": "Bahasa",
+
+  "symptom.form.title": "Diagnosa Kerusakan",
+  "symptom.form.equipment_type": "Jenis Peralatan",
+  "symptom.form.equipment_type.placeholder": "Contoh: Mesin CNC Milling",
+  "symptom.form.manufacturer": "Produsen (opsional)",
+  "symptom.form.model": "Model (opsional)",
+  "symptom.form.alarm_code": "Kode Alarm (opsional)",
+  "symptom.form.symptom_text": "Deskripsi Gejala",
+  "symptom.form.symptom_text.placeholder": "Jelaskan gejala yang terdeteksi secara detail...",
+  "symptom.form.submit": "Mulai Diagnosa",
+  "symptom.form.submitting": "Memproses...",
+
+  "diagnosis.loading": "Menganalisis gejala...",
+  "diagnosis.confidence": "Tingkat Keyakinan",
+  "diagnosis.causes.title": "Kemungkinan Penyebab",
+  "diagnosis.cause.rank": "Kemungkinan #{{rank}}",
+  "diagnosis.citation": "Sumber",
+  "diagnosis.checklist.title": "Langkah Inspeksi",
+  "diagnosis.checklist.safety_note": "Catatan Keselamatan",
+  "diagnosis.report.download": "Unduh Laporan",
+
+  "escalation.title": "⚠ PERINGATAN BAHAYA — ESKALASI DIPERLUKAN",
+  "escalation.subtitle": "Jangan lanjutkan tanpa bantuan teknisi yang berkualifikasi.",
+
+  "refusal.title": "Dokumentasi Tidak Ditemukan",
+  "refusal.message": "Tidak ada dokumentasi yang relevan ditemukan untuk gejala ini. Harap konsultasikan langsung dengan manual teknis resmi.",
+
+  "error.generic": "Terjadi kesalahan. Silakan coba lagi.",
+  "error.network": "Tidak dapat menghubungi server. Pastikan backend berjalan."
+}

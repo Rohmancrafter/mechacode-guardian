@@ -216,3 +216,32 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# -------------------------------------------------------------------------
+# MechaCode Guardian — project-specific additions
+# -------------------------------------------------------------------------
+
+# Environment secrets — NEVER commit real credentials
+.env
+.env.local
+.env.*.local
+*.env
+
+# Python virtual environment (any name)
+.venv/
+venv/
+env/
+
+# Frontend — Node
+frontend/node_modules/
+frontend/dist/
+frontend/.env
+frontend/.env.local
+
+# Build outputs
+dist/
+build/
+
+# OS artefacts
+.DS_Store
+Thumbs.db
