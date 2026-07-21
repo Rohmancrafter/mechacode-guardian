@@ -197,21 +197,72 @@ Use this template for each IBM Bob session entry:
 
 ---
 
+### Session C-002
+**Date:** 2026-07-22
+**Category:** C — Coding
+**Task:** Implement the deterministic dry-run ingestion pipeline.
+**Prompt summary:** Developer requested implementation of the complete ingestion pipeline
+under `backend/ingestion/` (manifest loading, secure path validation, Markdown loader,
+heading-aware chunker, deterministic metadata/chunk-ID generation, dry-run report),
+update of `scripts/ingest.py` (--file/--all/--dry-run with mutual-exclusion enforcement,
+non-zero exit codes), comprehensive unit tests, and documentation updates.
+Strict restrictions: no Astra DB, no Gemini embedding, no network calls, no credential access,
+no heavy parser dependency (ARCHITECTURE.md §8 — Markdown corpus handled without docling),
+HEAD must remain da4e749.
+**Output summary:** IBM Bob produced:
+- `backend/ingestion/manifest.py` — manifest loading and validation with typed dataclasses
+- `backend/ingestion/path_security.py` — path validation; rejects traversal, symlinks, outside-corpus
+- `backend/ingestion/loader.py` — UTF-8 Markdown reader (no network I/O)
+- `backend/ingestion/chunker.py` — heading-aware, paragraph-aware, safety-atomic chunker
+- `backend/ingestion/metadata.py` — deterministic chunk ID (SHA-256) + citation metadata
+- `backend/ingestion/dry_run.py` — human-readable dry-run summary with explicit no-DB/no-embedding confirmation
+- `backend/ingestion/pipeline.py` — orchestrator wiring all modules
+- `backend/ingestion/__init__.py` — updated with module docstring
+- `scripts/ingest.py` — full rewrite: --file/--all mutually exclusive, --dry-run required, exit codes 0/1/2/3
+- `tests/unit/test_ingestion.py` — 61 unit tests covering all required scenarios
+- `README.md` — added dry-run PowerShell commands; updated implementation status
+- `docs/IBM_BOB_USAGE.md` — this session entry (C-002)
+**Acceptance:** MOD
+**Verification:** VER — developer ran all validations:
+  `py -3.12 -m pytest tests/unit -v` → 76 passed
+  `py -3.12 scripts/ingest.py --file knowledge/synthetic/MGC-MOTOR-001.md --dry-run` → 51 chunks, 14 sections, 0 failures
+  `py -3.12 scripts/ingest.py --all --dry-run` → 5 files, 226 total chunks, 0 failures
+  `npm --prefix frontend run build` → success
+  HEAD confirmed da4e749, no commit or push performed.
+**Developer notes:**
+- ASSUMPTION [ingestion-chunker-A1]: chunk size uses character-based proxy (2048 chars ≈ 512 tokens,
+  256 chars ≈ 64-token overlap) because ARCHITECTURE.md §8 explicitly avoids heavy tokeniser dependencies
+  for the current Markdown corpus. Reported explicitly in dry-run output.
+- `docling` is NOT used in this session — the pure-Python chunker handles the Markdown corpus correctly.
+  docling will be integrated when PDF/DOCX sources are added.
+- Safety-warning paragraphs (⚠, ESCALATION, WARNING) are marked as atomic blocks and never split.
+- All chunk IDs are deterministic: `{doc_id}::{index:04d}::{sha256[:12]}`.
+- `manifest.json` has `approved_for_rag: false` on all documents per the Day 3 audit (D-003);
+  the pipeline accepts this — approval status is not enforced in dry-run mode.
+- LF/CRLF line-ending warnings from `git diff --check` are normal on Windows with core.autocrlf=true;
+  they are not whitespace errors and do not affect the diff content.
+**Commit reference:** *(to be filled on commit)*
+**Files affected:** `backend/ingestion/__init__.py`, `backend/ingestion/manifest.py`,
+  `backend/ingestion/path_security.py`, `backend/ingestion/loader.py`,
+  `backend/ingestion/chunker.py`, `backend/ingestion/metadata.py`,
+  `backend/ingestion/dry_run.py`, `backend/ingestion/pipeline.py`,
+  `scripts/ingest.py`, `tests/unit/test_ingestion.py`,
+  `README.md`, `docs/IBM_BOB_USAGE.md`
+
+---
+
 ### Template entries to be completed (remaining):
 
 | Expected Session IDs | Day | Planned Task |
 |---|---|---|
-| C-002 | Day 2 | IBM Docling parser integration |
-| C-003 | Day 2 | Chunker implementation |
-| C-004 | Day 2 | Embedding API client |
-| C-005 | Day 3 | Astra DB retrieval client |
-| C-006 | Day 4 | Safety gate implementation |
-| C-007 | Day 5 | LLM provider abstraction + ProviderRouter |
-| C-008 | Day 5 | Prompt templates (Indonesian + English) |
-| C-009 | Day 6 | FastAPI route handlers |
-| C-010 | Day 6 | Reporting module |
-| C-011 | Day 7 | React frontend components |
-| C-012 | Day 7 | API client (TypeScript fetch wrapper) |
+| C-003 | Day 3 | Astra DB retrieval client |
+| C-004 | Day 4 | Safety gate implementation |
+| C-005 | Day 5 | LLM provider abstraction + ProviderRouter |
+| C-006 | Day 5 | Prompt templates (Indonesian + English) |
+| C-007 | Day 6 | FastAPI route handlers |
+| C-008 | Day 6 | Reporting module |
+| C-009 | Day 7 | React frontend components |
+| C-010 | Day 7 | API client (TypeScript fetch wrapper) |
 
 ---
 
@@ -369,4 +420,4 @@ The following principles govern this log:
 ---
 
 *End of IBM_BOB_USAGE.md*
-*Last updated: 2026-07-21 (Session C-001 — application foundation scaffold) by Muhammad Nur Rohman.*
+*Last updated: 2026-07-22 (Session C-002 — deterministic dry-run ingestion pipeline) by Muhammad Nur Rohman.*

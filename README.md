@@ -107,21 +107,36 @@ npm run dev
 
 The frontend dev server proxies `/api/*` and `/health` to the backend automatically.
 
-### 4. Run backend tests
+### 4. Dry-run the ingestion pipeline (no database or embedding calls)
+
+```powershell
+# Single document — validate, chunk, and summarise (dry-run only)
+py -3.12 scripts/ingest.py --file knowledge/synthetic/MGC-MOTOR-001.md --dry-run
+
+# All documents declared in the manifest
+py -3.12 scripts/ingest.py --all --dry-run
+
+# With verbose per-chunk preview
+py -3.12 scripts/ingest.py --all --dry-run --verbose
+```
+
+Dry-run confirms: zero Astra DB writes, zero Gemini embedding calls, zero network requests.
+
+### 5. Run backend tests
 
 ```powershell
 # From project root (with .venv active)
-pytest tests/unit/ -v
+py -3.12 -m pytest tests/unit -v
 ```
 
-### 5. Validate frontend types
+### 6. Validate frontend types
 
 ```powershell
 cd frontend
 npm run type-check
 ```
 
-### 6. Build frontend for production
+### 7. Build frontend for production
 
 ```powershell
 cd frontend
@@ -186,7 +201,12 @@ See [`data/safety_triggers.json`](data/safety_triggers.json) for the version-con
 | Backend scaffold (FastAPI, routers, schemas) | ✅ Foundation |
 | Frontend scaffold (React, components, i18n) | ✅ Foundation |
 | Safety triggers list (21 patterns) | ✅ Done |
-| Document ingestion pipeline | ⬜ Day 2 |
+| Document ingestion pipeline — dry-run | ✅ Done (Day 2) |
+| Manifest loading and validation | ✅ Done (Day 2) |
+| Secure path validation (anti-traversal) | ✅ Done (Day 2) |
+| Heading-aware chunker | ✅ Done (Day 2) |
+| Deterministic metadata / chunk IDs | ✅ Done (Day 2) |
+| Dry-run summary report | ✅ Done (Day 2) |
 | Astra DB retrieval client | ⬜ Day 3 |
 | Safety gate implementation | ⬜ Day 4 |
 | LLM provider abstraction | ⬜ Day 5 |
