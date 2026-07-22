@@ -20,8 +20,8 @@ MechaCode Guardian addresses this by acting as an AI-powered maintenance co-work
 | Role | Technology |
 |---|---|
 | AI development partner | IBM Bob (primary — all coding, architecture, documentation) |
-| Primary LLM (diagnosis generation) | IBM Granite via watsonx.ai |
-| Fallback LLM | Gemini (Google AI) via `google-genai` SDK |
+| Primary LLM (diagnosis generation) | Gemini via the `google-genai` SDK |
+| Optional future LLM | IBM Granite via watsonx.ai when credentials are available |
 | Embeddings | `gemini-embedding-001` (3072-dim, bilingual) |
 | Vector store | DataStax Astra DB — collection `mechacode_guardian_kb` |
 | Document parsing | IBM Docling |
@@ -67,7 +67,8 @@ IBM Bob was the primary AI development partner for this project, used across arc
 
 - Python 3.12
 - Node.js 24 LTS + npm 11
-- Active API credentials for Google AI, watsonx.ai, and Astra DB
+- Active API credentials for Google AI and Astra DB
+- Optional watsonx.ai credentials for future IBM Granite integration
 
 ### 1. Clone and configure environment
 
