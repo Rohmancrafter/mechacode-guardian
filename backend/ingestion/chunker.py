@@ -85,6 +85,9 @@ Maximum lines in a numbered procedure block before it is split
 _HEADING_RE = re.compile(r"^(#{1,6})\s+(.+)$")
 _FENCE_RE = re.compile(r"^```")
 _TABLE_ROW_RE = re.compile(r"^\s*\|")
+_HORIZONTAL_RULE_RE = re.compile(
+    r"^\s{0,3}(?:(?:-\s*){3,}|(?:\*\s*){3,}|(?:_\s*){3,})$"
+)
 _SAFETY_RE = re.compile(
     r"(⚠|WARNING|CAUTION|DANGER|ESCALAT|Escalat|escalat|STOP|PROHIBITED|DO NOT)",
     re.IGNORECASE,
@@ -141,6 +144,95 @@ class Chunk:
 # Parser helpers
 # ---------------------------------------------------------------------------
 
+def _is_short_context_label(block: _Block) -> bool:
+    """
+    Return True when *block* is a short Markdown context label.
+
+    Labels such as ``**Safe inspection steps:**`` and
+    ``*Kondisi eskalasi*`` belong with the content that follows them.  Keeping
+    them as independent chunks produces low-information embeddings.
+    """
+    if block.kind != "paragraph" or block.is_atomic or "\n" in block.content:
+        return False
+
+    raw = block.content.strip()
+    is_emphasised = (
+        (raw.startswith("**") and raw.endswith("**") and len(raw) > 4)
+        or (raw.startswith("__") and raw.endswith("__") and len(raw) > 4)
+        or (
+            raw.startswith("*")
+            and raw.endswith("*")
+            and not raw.startswith("**")
+            and len(raw) > 2
+        )
+        or (
+            raw.startswith("_")
+            and raw.endswith("_")
+            and not raw.startswith("__")
+            and len(raw) > 2
+        )
+    )
+
+    visible = re.sub(r"[*_`]", "", raw).strip()
+    visible = re.sub(r"\s+", " ", visible)
+    words = re.findall(r"\w+", visible, flags=re.UNICODE)
+
+    if not (2 <= sum(ch.isalnum() for ch in visible) <= 96):
+        return False
+    if not (1 <= len(words) <= 10):
+        return False
+
+    return visible.endswith(":") or is_emphasised
+
+
+def _merge_short_context_labels(blocks: list[_Block]) -> list[_Block]:
+    """
+    Merge short context labels into the next content block.
+
+    A run of labels is merged with the next non-heading block.  The merged
+    block inherits atomicity from every source block so a label attached to a
+    warning, procedure, table, or fenced block cannot be separated again.
+    """
+    merged: list[_Block] = []
+    i = 0
+
+    while i < len(blocks):
+        block = blocks[i]
+        if not _is_short_context_label(block):
+            merged.append(block)
+            i += 1
+            continue
+
+        labels = [block]
+        j = i + 1
+        while j < len(blocks) and _is_short_context_label(blocks[j]):
+            labels.append(blocks[j])
+            j += 1
+
+        if j < len(blocks) and blocks[j].kind != "heading":
+            target = blocks[j]
+            merged.append(_Block(
+                kind=target.kind,
+                content="\n\n".join(
+                    [label.content for label in labels] + [target.content]
+                ),
+                heading_level=target.heading_level,
+                heading_text=target.heading_text,
+                is_atomic=target.is_atomic or any(
+                    label.is_atomic for label in labels
+                ),
+            ))
+            i = j + 1
+            continue
+
+        # A label immediately before a heading has no following content in its
+        # current section, so preserve it instead of attaching it incorrectly.
+        merged.extend(labels)
+        i = j
+
+    return merged
+
+
 def _parse_blocks(text: str) -> list[_Block]:
     """
     Parse *text* into a flat list of logical blocks.
@@ -162,6 +254,13 @@ def _parse_blocks(text: str) -> list[_Block]:
 
         # ---- Blank line: skip ----
         if not line.strip():
+            i += 1
+            continue
+
+        # ---- Thematic break / horizontal rule: discard ----
+        # A table delimiter such as |---|---| is handled by the table branch
+        # below and therefore is never mistaken for a thematic break.
+        if _HORIZONTAL_RULE_RE.match(line):
             i += 1
             continue
 
@@ -217,9 +316,29 @@ def _parse_blocks(text: str) -> list[_Block]:
         # ---- Paragraph (everything else) ----
         para_lines = []
         while i < n and lines[i].strip():
+            current = lines[i]
+
+            # Structural Markdown may legally follow a paragraph without an
+            # intervening blank line.  Leave it for the next outer iteration.
+            if para_lines and (
+                _HEADING_RE.match(current)
+                or _FENCE_RE.match(current)
+                or _TABLE_ROW_RE.match(current)
+                or _HORIZONTAL_RULE_RE.match(current)
+            ):
+                break
+
+            # A thematic break reached as the first line is discarded here;
+            # normally it is handled by the outer branch above.
+            if _HORIZONTAL_RULE_RE.match(current):
+                i += 1
+                break
+
             para_lines.append(lines[i])
             i += 1
         content = "\n".join(para_lines)
+        if not content:
+            continue
         # Mark as atomic if it contains a safety warning
         is_atomic = bool(_SAFETY_RE.search(content))
         blocks.append(_Block(
@@ -228,7 +347,7 @@ def _parse_blocks(text: str) -> list[_Block]:
             is_atomic=is_atomic,
         ))
 
-    return blocks
+    return _merge_short_context_labels(blocks)
 
 
 def _blocks_to_chunks(
@@ -289,14 +408,15 @@ def _blocks_to_chunks(
             level = block.heading_level
             text = block.heading_text
 
+            # Pending content belongs to the section that was active before
+            # this heading.  Flush it before changing heading metadata.
+            flush(carry_overlap=False)
+
             # Update heading stack
             # Truncate stack to this heading's level, then push
             heading_stack = heading_stack[: level - 1]
             heading_stack.append(text)
             section_anchor = text
-
-            # Flush pending content before the new section
-            flush(carry_overlap=False)
             continue
 
         # --- Content block ---

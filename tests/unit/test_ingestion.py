@@ -496,6 +496,77 @@ class TestChunker:
         table_chunks = [c for c in chunks if "|" in c.text and "---" in c.text]
         assert len(table_chunks) > 0
 
+    def test_horizontal_rules_are_discarded_but_table_delimiter_is_kept(self) -> None:
+        """Thematic breaks must not become low-information chunks."""
+        from backend.ingestion.chunker import chunk_markdown
+
+        markdown = """\
+# Separators
+
+---
+
+***
+
+___
+
+| Name | Value |
+|---|---|
+| Motor | 24 V |
+"""
+        chunks = chunk_markdown(markdown)
+
+        assert all(c.text.strip() not in {"---", "***", "___"} for c in chunks)
+        assert any("|---|---|" in c.text for c in chunks)
+
+    def test_short_context_labels_are_attached_to_following_content(self) -> None:
+        """Short labels retain meaning by staying with the related content."""
+        from backend.ingestion.chunker import chunk_markdown
+
+        markdown = """\
+# Inspection
+
+**Safe inspection steps:**
+
+1. Isolate the training motor.
+2. Verify zero energy.
+
+*Kondisi eskalasi*
+
+**WARNING:** Stop if damaged insulation is visible.
+"""
+        chunks = chunk_markdown(markdown)
+
+        inspection = next(c for c in chunks if "**Safe inspection steps:**" in c.text)
+        escalation = next(c for c in chunks if "*Kondisi eskalasi*" in c.text)
+
+        assert "1. Isolate the training motor." in inspection.text
+        assert "**WARNING:** Stop if damaged insulation is visible." in escalation.text
+        assert all(c.text.strip() != "**Safe inspection steps:**" for c in chunks)
+        assert all(c.text.strip() != "*Kondisi eskalasi*" for c in chunks)
+
+    def test_content_before_new_heading_keeps_previous_section_metadata(self) -> None:
+        """A heading change must not relabel content from the previous section."""
+        from backend.ingestion.chunker import chunk_markdown
+
+        markdown = """\
+# First Section
+
+Content that belongs to the first section.
+
+# Second Section
+
+Content that belongs to the second section.
+"""
+        chunks = chunk_markdown(markdown)
+
+        first = next(c for c in chunks if "belongs to the first" in c.text)
+        second = next(c for c in chunks if "belongs to the second" in c.text)
+
+        assert first.section_anchor == "First Section"
+        assert first.heading_stack == ["First Section"]
+        assert second.section_anchor == "Second Section"
+        assert second.heading_stack == ["Second Section"]
+
     def test_unicode_chunks_correct(self) -> None:
         """Unicode text in Markdown produces correct chunks."""
         from backend.ingestion.chunker import chunk_markdown
