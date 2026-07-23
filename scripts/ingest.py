@@ -1,60 +1,26 @@
 """
-ingest.py — CLI script for ingesting synthetic knowledge documents.
+ingest.py — CLI for offline validation and explicit live ingestion.
 
-Usage (dry-run mode — the only operational mode in this session):
+Examples:
+    python scripts/ingest.py --all --dry-run
+    python scripts/ingest.py --all --live
+    python scripts/ingest.py --file knowledge/synthetic/MGC-MOTOR-001.md --live
 
-    # Single document
-    py -3.12 scripts/ingest.py --file knowledge/synthetic/MGC-MOTOR-001.md --dry-run
-
-    # All documents declared in the manifest
-    py -3.12 scripts/ingest.py --all --dry-run
-
-    # With verbose chunk previews
-    py -3.12 scripts/ingest.py --all --dry-run --verbose
-
-Restrictions (enforced at runtime, non-zero exit on violation):
-    - --file and --all are mutually exclusive.
-    - --dry-run is required in this session (live ingestion not yet implemented).
-    - Only files inside knowledge/synthetic/ are accepted.
-    - Files must be declared in knowledge/synthetic/manifest.json.
-    - Path traversal and symlink escapes are rejected with exit code 2.
-    - Manufacturer manuals and unapproved files are rejected with exit code 2.
-
-Exit codes:
-    0   Success — dry-run completed, all documents valid.
-    1   Usage error (bad arguments).
-    2   Validation failure (file outside corpus, not in manifest, path traversal).
-    3   I/O or parsing error (unreadable file, malformed manifest).
-
-Security:
-    No environment variables are read.
-    No credentials or API keys are accessed.
-    No network request is made.
-    No database write is performed.
-
-References:
-    ARCHITECTURE.md §1.4 (Ingestion CLI)
-    ARCHITECTURE.md §4.1 (Ingestion pipeline)
-    PRD.md FR-02 (Document ingestion)
-    UD-05 (knowledge/synthetic/ only for MVP)
+Live mode requires typing ``INGEST`` before the first network request. The
+``--yes`` flag is available for an explicitly authorized non-interactive run.
 """
 
 from __future__ import annotations
 
 import argparse
-import io
 import sys
 from pathlib import Path
 
-# Ensure the workspace root is on sys.path so `backend` is importable
-# when this script is invoked directly (e.g. py -3.12 scripts/ingest.py).
+
 _WORKSPACE_ROOT = Path(__file__).resolve().parent.parent
 if str(_WORKSPACE_ROOT) not in sys.path:
     sys.path.insert(0, str(_WORKSPACE_ROOT))
 
-# On Windows, the default console encoding may not support Unicode characters
-# (e.g. ⚠, ✓, ✗).  Reconfigure stdout/stderr to UTF-8 with replacement so
-# output is never lost, and special characters degrade gracefully.
 if hasattr(sys.stdout, "reconfigure"):
     try:
         sys.stdout.reconfigure(encoding="utf-8", errors="replace")
@@ -68,9 +34,8 @@ def _build_parser() -> argparse.ArgumentParser:
         prog="ingest.py",
         description=(
             "MechaCode Guardian — Document Ingestion CLI\n\n"
-            "Processes synthetic knowledge documents for the RAG pipeline.\n"
-            "--file and --all are mutually exclusive.\n"
-            "--dry-run is the only supported mode in the current session."
+            "Use --dry-run for offline validation or --live for explicit "
+            "Gemini embedding and Astra DB upsert."
         ),
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
@@ -81,93 +46,175 @@ def _build_parser() -> argparse.ArgumentParser:
         type=Path,
         metavar="PATH",
         help=(
-            "Path to a single synthetic knowledge document to process. "
-            "Must be located inside knowledge/synthetic/ and declared in "
-            "knowledge/synthetic/manifest.json."
+            "Process one synthetic knowledge document. The file must be "
+            "inside knowledge/synthetic/ and declared in manifest.json."
         ),
     )
     source_group.add_argument(
         "--all",
         action="store_true",
         dest="all_documents",
-        help=(
-            "Process every document declared in "
-            "knowledge/synthetic/manifest.json."
-        ),
+        help="Process every document declared in manifest.json.",
     )
 
-    parser.add_argument(
+    mode_group = parser.add_mutually_exclusive_group()
+    mode_group.add_argument(
         "--dry-run",
         action="store_true",
         dest="dry_run",
-        help=(
-            "Parse and chunk documents but do not write to Astra DB, "
-            "call the embedding API, or make any network request. "
-            "(Required in the current session — live ingestion not yet implemented.)"
-        ),
+        help="Validate and preview locally without reading credentials.",
+    )
+    mode_group.add_argument(
+        "--live",
+        action="store_true",
+        help="Generate Gemini embeddings and upsert them to Astra DB.",
     )
 
     parser.add_argument(
+        "--yes",
+        action="store_true",
+        help=(
+            "Skip the interactive INGEST confirmation in --live mode. "
+            "Use only for an explicitly authorized non-interactive run."
+        ),
+    )
+    parser.add_argument(
+        "--batch-size",
+        type=int,
+        default=20,
+        metavar="N",
+        help="Gemini embedding batch size from 1 to 100 (default: 20).",
+    )
+    parser.add_argument(
         "--verbose",
         action="store_true",
-        help="Show per-chunk previews and full section headings in dry-run output.",
+        help="Show chunk previews and section headings in dry-run mode.",
     )
-
     parser.add_argument(
         "--manifest",
         type=Path,
         default=Path("knowledge/synthetic/manifest.json"),
         metavar="PATH",
-        help="Override path to manifest.json (default: knowledge/synthetic/manifest.json).",
+        help="Override manifest path.",
     )
-
     return parser
+
+
+def _print_validation_failures(report) -> None:
+    print(
+        "ERROR: Live ingestion aborted because validation failed.",
+        file=sys.stderr,
+    )
+    for result in report.document_results:
+        for failure in result.validation_failures:
+            print(
+                f"  - {result.filename}: {failure}",
+                file=sys.stderr,
+            )
+
+
+def _confirm_live(settings, report) -> bool:
+    print("")
+    print("=" * 72)
+    print("  LIVE INGESTION CONFIRMATION")
+    print("=" * 72)
+    print(f"  Files       : {len(report.document_results)}")
+    print(f"  Chunks      : {report.total_chunks}")
+    print(f"  Keyspace    : {settings.astra_db_keyspace}")
+    print(f"  Collection  : {settings.kb_collection}")
+    print(f"  Model       : {settings.embedding_model}")
+    print(f"  Dimensions  : {settings.embedding_dimensions}")
+    print("")
+    print("  This operation will call Gemini and write to Astra DB.")
+    print("  Existing matching _id values will be replaced (idempotent upsert).")
+    print("=" * 72)
+
+    if not sys.stdin.isatty():
+        print(
+            "ERROR: Interactive confirmation is unavailable. "
+            "Re-run with --yes only if this live write is authorized.",
+            file=sys.stderr,
+        )
+        return False
+
+    try:
+        answer = input("Type INGEST to continue: ").strip()
+    except (EOFError, KeyboardInterrupt):
+        print("")
+        return False
+    return answer == "INGEST"
 
 
 def main() -> int:
     parser = _build_parser()
     args = parser.parse_args()
 
-    # --- Validate: must specify --file or --all ---
     if args.file is None and not args.all_documents:
-        parser.error(
-            "Must specify either --file <path> or --all. "
-            "Use --help for usage."
-        )
-        return 1  # unreachable but explicit
+        parser.error("Must specify either --file <path> or --all.")
+    if not args.dry_run and not args.live:
+        parser.error("Must specify exactly one mode: --dry-run or --live.")
+    if args.yes and not args.live:
+        parser.error("--yes can only be used together with --live.")
+    if not 1 <= args.batch_size <= 100:
+        parser.error("--batch-size must be between 1 and 100.")
 
-    # --- Validate: --dry-run required ---
-    if not args.dry_run:
-        print(
-            "ERROR: --dry-run is required. "
-            "Live ingestion (Astra DB write + Gemini embedding) is not yet implemented. "
-            "Run with --dry-run to validate and preview the ingestion pipeline.",
-            file=sys.stderr,
-        )
-        return 1
-
-    # --- Import ingestion pipeline (deferred to avoid import cost on bad args) ---
     try:
-        from backend.ingestion.pipeline import run_dry_run
         from backend.ingestion.path_security import PathSecurityError
+        from backend.ingestion.pipeline import (
+            build_ingestion_plan,
+            run_dry_run,
+        )
     except ImportError as exc:
         print(
-            f"ERROR: Failed to import ingestion pipeline: {exc}\n"
-            "Ensure the backend package is installed or run from the project root.",
+            f"ERROR: Failed to import ingestion pipeline: {exc}",
             file=sys.stderr,
         )
         return 3
 
-    # --- Execute ---
     try:
-        report = run_dry_run(
+        if args.dry_run:
+            report = run_dry_run(
+                file=args.file,
+                all_documents=args.all_documents,
+                manifest_path=args.manifest,
+                verbose=args.verbose,
+            )
+            return 2 if report.total_validation_failures else 0
+
+        plan = build_ingestion_plan(
             file=args.file,
             all_documents=args.all_documents,
             manifest_path=args.manifest,
-            verbose=args.verbose,
         )
+        if plan.total_validation_failures:
+            _print_validation_failures(plan)
+            return 2
+
+        from backend.core.config import get_settings
+
+        settings = get_settings()
+
+        if not args.yes and not _confirm_live(settings, plan):
+            print(
+                "Live ingestion cancelled. No Gemini or Astra DB call was made.",
+                file=sys.stderr,
+            )
+            return 1
+
+        from backend.ingestion.live import (
+            format_live_report,
+            run_live_ingestion,
+        )
+
+        live_report = run_live_ingestion(
+            plan,
+            settings,
+            batch_size=args.batch_size,
+        )
+        print(format_live_report(live_report))
+        return 0
+
     except ValueError as exc:
-        # Usage / validation errors (bad arguments, invalid manifest)
         print(f"ERROR: {exc}", file=sys.stderr)
         return 1
     except FileNotFoundError as exc:
@@ -176,19 +223,20 @@ def main() -> int:
     except PathSecurityError as exc:
         print(f"SECURITY ERROR: {exc}", file=sys.stderr)
         return 2
-    except (OSError, UnicodeDecodeError) as exc:
+    except UnicodeDecodeError as exc:
         print(f"I/O ERROR: {exc}", file=sys.stderr)
         return 3
-    except Exception as exc:
-        print(f"UNEXPECTED ERROR: {exc}", file=sys.stderr)
+    except OSError as exc:
+        label = (
+            "CONFIGURATION ERROR"
+            if "Required environment variable" in str(exc)
+            else "I/O ERROR"
+        )
+        print(f"{label}: {exc}", file=sys.stderr)
         return 3
-
-    # --- Report exit code ---
-    if report.total_validation_failures > 0:
-        # Individual file failures were already printed in the report
-        return 2
-
-    return 0
+    except Exception as exc:
+        print(f"LIVE INGESTION ERROR: {exc}", file=sys.stderr)
+        return 3
 
 
 if __name__ == "__main__":
