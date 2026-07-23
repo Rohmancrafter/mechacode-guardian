@@ -20,8 +20,8 @@ def _minimal_env(monkeypatch: pytest.MonkeyPatch) -> None:
     )
 
     # watsonx.ai must remain optional.
-    monkeypatch.delenv("WX_API_KEY", raising=False)
-    monkeypatch.delenv("WX_PROJECT_ID", raising=False)
+    monkeypatch.setenv("WX_API_KEY", "")
+    monkeypatch.setenv("WX_PROJECT_ID", "")
 
 
 class TestLoadSettings:
@@ -74,6 +74,11 @@ class TestLoadSettings:
         monkeypatch.delenv("GOOGLE_AI_API_KEY", raising=False)
 
         import backend.core.config as cfg
+        monkeypatch.setattr(
+            cfg,
+            "load_dotenv",
+            lambda *args, **kwargs: False,
+        )
 
         cfg._settings = None
 

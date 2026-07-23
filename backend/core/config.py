@@ -9,6 +9,14 @@ from __future__ import annotations
 
 import os
 from dataclasses import dataclass, field
+from pathlib import Path
+
+from dotenv import load_dotenv
+
+
+# Project-root environment file:
+# mechacode-guardian/.env
+_ENV_FILE = Path(__file__).resolve().parents[2] / ".env"
 
 
 @dataclass(frozen=True)
@@ -59,10 +67,14 @@ def load_settings() -> Settings:
     """
     Load and validate settings from environment variables.
 
+    Existing system environment variables take precedence over values
+    declared in the project-root .env file.
+
     Raises:
         EnvironmentError: If any required environment variable is absent
-        or empty.
+            or empty.
     """
+    load_dotenv(dotenv_path=_ENV_FILE, override=False)
 
     def _require(name: str) -> str:
         value = os.environ.get(name, "").strip()
