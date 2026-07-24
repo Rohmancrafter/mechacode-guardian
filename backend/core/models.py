@@ -14,13 +14,9 @@ from uuid import UUID
 from pydantic import BaseModel, Field
 
 
-# ---------------------------------------------------------------------------
-# Enumerations
-# ---------------------------------------------------------------------------
-
-
 class ConfidenceBand(str, Enum):
     """Three-tier confidence classification (PRD §FR-04.3, UD-02)."""
+
     HIGH = "High"
     MEDIUM = "Medium"
     LOW = "Low"
@@ -28,23 +24,20 @@ class ConfidenceBand(str, Enum):
 
 class Language(str, Enum):
     """Supported response languages."""
+
     INDONESIAN = "id"
     ENGLISH = "en"
 
 
 class HazardType(str, Enum):
     """Hazard categories surfaced in escalation responses."""
+
     ELECTRICAL = "electrical"
     MECHANICAL = "mechanical"
     HYDRAULIC = "hydraulic"
     PNEUMATIC = "pneumatic"
     CHEMICAL = "chemical"
     UNKNOWN = "unknown"
-
-
-# ---------------------------------------------------------------------------
-# Retrieval
-# ---------------------------------------------------------------------------
 
 
 class Chunk(BaseModel):
@@ -59,11 +52,22 @@ class Chunk(BaseModel):
     language: str = Field(default="en", description="Language of this chunk")
     provenance: str = Field(default="synthetic", description="Data provenance label")
     score: float = Field(description="Cosine similarity score from ANN search")
-
-
-# ---------------------------------------------------------------------------
-# Generation outputs
-# ---------------------------------------------------------------------------
+    source_file: str | None = Field(
+        default=None,
+        description="Original knowledge-base filename",
+    )
+    title: str | None = Field(
+        default=None,
+        description="Human-readable source document title",
+    )
+    safety_classification: str | None = Field(
+        default=None,
+        description="Safety classification copied from ingestion metadata",
+    )
+    equipment_category: str | None = Field(
+        default=None,
+        description="Equipment category copied from ingestion metadata",
+    )
 
 
 class ProbableCause(BaseModel):
@@ -85,15 +89,13 @@ class ChecklistStep(BaseModel):
     tool_required: str | None = None
     safety_note: str | None = Field(
         default=None,
-        description="Required when step involves electrical, hydraulic, or pneumatic systems (SR-05)"
+        description=(
+            "Required when step involves electrical, hydraulic, "
+            "or pneumatic systems (SR-05)"
+        ),
     )
     expected_outcome: str | None = None
     evidence_indices: list[int] = Field(default_factory=list)
-
-
-# ---------------------------------------------------------------------------
-# Safety gate
-# ---------------------------------------------------------------------------
 
 
 class EscalationTrigger(BaseModel):
@@ -103,11 +105,6 @@ class EscalationTrigger(BaseModel):
     hazard_type: HazardType
     severity: str
     matched_text: str
-
-
-# ---------------------------------------------------------------------------
-# Session / report
-# ---------------------------------------------------------------------------
 
 
 class SessionData(BaseModel):
@@ -128,5 +125,5 @@ class SessionData(BaseModel):
     escalation_triggers: list[EscalationTrigger] = Field(default_factory=list)
     provider_used: str = ""
     fallback_used: bool = False
-    created_at: str = ""  # ISO-8601 timestamp set at session creation
+    created_at: str = ""
     extra: dict[str, Any] = Field(default_factory=dict)
